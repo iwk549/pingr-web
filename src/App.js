@@ -1,26 +1,47 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { Component } from "react";
+import { Route, Switch, Redirect, BrowserRouter } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import logo from "./logo.svg";
+import "./App.css";
+import { checkLoginStatus } from "./services/authService";
+import Home from "./components/home";
+import LoginForm from "./components/loginForm";
+import RegisterForm from "./components/registerForm";
+import NavBar from "./components/navbar";
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+class App extends Component {
+  state = {};
+
+  async componentDidMount() {
+    const user = localStorage.getItem("loggedIn");
+    this.setState({ user });
+  }
+
+  render() {
+    return (
+      <React.Fragment>
+        <BrowserRouter>
+          <ToastContainer
+            position="bottom-right"
+            autoClose={4000}
+            closeOnClick
+            pauseOnHover
+            pauseOnFocusLoss
+          />
+          <NavBar user={this.state.user} />
+          <main className="container">
+            <div className="content"></div>
+            <Switch>
+              <Route exact path="/register" component={RegisterForm} />
+              <Route exact path="/login" component={LoginForm} />
+              <Route exact path="/" component={Home} />
+            </Switch>
+          </main>
+        </BrowserRouter>
+      </React.Fragment>
+    );
+  }
 }
 
 export default App;
