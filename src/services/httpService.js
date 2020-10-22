@@ -1,7 +1,9 @@
 import axios from "axios";
+import useAxios, { configure } from "axios-hooks";
 import { toast } from "react-toastify";
 
 axios.defaults.baseURL = process.env.REACT_APP_API_URL;
+axios.defaults.withCredentials = true;
 
 axios.interceptors.response.use(null, (error) => {
   const expectedError =

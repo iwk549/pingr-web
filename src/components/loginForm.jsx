@@ -3,6 +3,7 @@ import Form from "./common/form";
 import Joi from "joi-browser";
 import { loginUser } from "../services/authService";
 import { toast } from "react-toastify";
+import Cookies from "js-cookie";
 import { Redirect } from "react-router-dom";
 
 class LoginForm extends Form {
@@ -23,12 +24,12 @@ class LoginForm extends Form {
 
     const response = await loginUser(data);
     if (response.status === 200) {
-      localStorage.setItem("loggedIn", "true");
-      window.location = "/";
+      window.location = "/messages";
     } else toast(response.data);
   };
 
   render() {
+    if (Cookies.get("loggedIn")) return <Redirect to="/messages" />;
     return (
       <div>
         <h1>{"Login"}</h1>

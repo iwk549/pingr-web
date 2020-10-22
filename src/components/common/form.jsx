@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import Joi from "joi-browser";
 import Input from "./input";
 import Select from "./select";
+import AreaInput from "./areaInput";
 
 class Form extends Component {
   state = {
@@ -102,6 +103,21 @@ class Form extends Component {
         disabled={disabled}
         max={max}
         min={min}
+      />
+    );
+  }
+
+  renderAreaInput(name, label, rows = 8, autofocus = "", disabled = "") {
+    const { data, errors } = this.state;
+    return (
+      <AreaInput
+        name={name}
+        label={label}
+        value={data[name]}
+        rows={rows}
+        onChange={this.handleChange}
+        error={errors[name]}
+        disabled={disabled}
       />
     );
   }

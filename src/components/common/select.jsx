@@ -7,8 +7,8 @@ const Select = ({ name, label, options, error, ...rest }) => {
       <select name={name} {...rest} className="form-control">
         <option key="default">Make a selection...</option>
         {options.map((option) => (
-          <option key={option._id} value={option.name}>
-            {option.name.split("%20%").join(" ")}
+          <option key={option._id} value={option._id}>
+            {option.username}
           </option>
         ))}
       </select>
