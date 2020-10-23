@@ -28,3 +28,37 @@ code {
 .navbar {
   background-color: #001a00;
 }
+.nav-link {
+  background-color: #008000;
+  color: #ffffe6;
+}
+.nav-link.active {
+  background-color: #00b300 !important;
+  font-weight: bold;
+  color: #ffffe6 !important;
+  border: 1px solid #00b300 !important;
+}
+.nav-link:hover {
+  background-color: #00b300;
+  color: #ffffe6;
+}
+
+.btn-primary {
+  background-color: #cc33ff;
+  border: 1px solid #c61aff;
+}
+.btn-primary:hover {
+  background-color: #9900cc;
+  border: 1px solid #8600b3;
+}
+.btn-primary:disabled {
+  background-color: #e699ff;
+  border: 1px solid #df80ff;
+}
+.btn-primary:focus {
+  background-color: #9900cc;
+  border: 1px solid #8600b3;
+}
+.btn-primary:active {
+  background-color: red;
+}

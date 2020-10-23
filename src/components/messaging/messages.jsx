@@ -5,18 +5,17 @@ import { getMessages, deleteMessage } from "../../services/messageService";
 import MessageForm from "./messageForm";
 import Loading from "../common/loading";
 import PageHeader from "../common/pageHeader";
-import MessageDeleteButton from "./../common/messageDeleteButton";
-import MessageDisplay from "./../common/messageDisplay";
-import FullMessage from "./../common/fullMessage";
+import FullMessage from "./fullMessage";
 
 class Messages extends Component {
   state = {
+    _id: "",
     username: "",
     selfMessages: [],
     friendMessages: {},
     friends: [],
     selfMessageOpen: false,
-    viewSelfMessages: false,
+    viewSelfMessages: true,
     friendMessageOpen: false,
     selectedFriend: null,
     friendOrder: "asc",
@@ -30,16 +29,34 @@ class Messages extends Component {
     if (response.status === 200) {
       let selfMessages = [];
       let friendMessages = [];
+      let sentMessages = [];
       response.data.messages.forEach((m) => {
-        if (m.from === response.data._id) selfMessages.push(m);
-        else friendMessages.push(m);
+        if (m.from === response.data._id && m.to === response.data._id)
+          selfMessages.push(m);
+        else if (m.from !== response.data._id) friendMessages.push(m);
+        else sentMessages.push(m);
       });
-      friendMessages = _.groupBy(friendMessages, "from");
+
       let friends = [];
+      friendMessages = _.groupBy(friendMessages, "from");
       response.data.friends.forEach((f) => {
-        if (f.confirmed) friends.push(f);
+        if (f.confirmed) {
+          friends.push(f);
+          sentMessages.forEach((m) => {
+            if (m.to === f._id)
+              friendMessages[f._id]
+                ? friendMessages[f._id].push(m)
+                : (friendMessages[f._id] = [m]);
+          });
+          friendMessages[f._id] = _.orderBy(
+            friendMessages[f._id],
+            "time",
+            "desc"
+          );
+        }
       });
       this.setState({
+        _id: response.data._id,
         username: response.data.username,
         selfMessages,
         friendMessages,
@@ -69,28 +86,30 @@ class Messages extends Component {
   };
 
   getPageData = () => {
-    let { friends, friendOrder, friendSort } = this.state;
+    let { friends, friendOrder, friendSort, selfMessages } = this.state;
     friends = _.orderBy(friends, friendSort, friendOrder);
-    return friends;
+    selfMessages = _.orderBy(selfMessages, "time", "desc");
+    return [friends, selfMessages];
   };
 
   render() {
     const {
-      selfMessages,
       friendMessages,
       selfMessageOpen,
-      viewSelfMessages,
       friendMessageOpen,
+      _id,
       username,
       selectedFriend,
+      viewSelfMessages,
       loading,
     } = this.state;
-    const friends = this.getPageData();
+    const [friends, selfMessages] = this.getPageData();
     return loading ? (
       <Loading />
     ) : (
       <React.Fragment>
         <PageHeader username={username} />
+
         <button
           className="btn btn-primary"
           onClick={() => this.openMessageForm("self")}
@@ -98,23 +117,35 @@ class Messages extends Component {
           {selfMessageOpen ? "Close Self Message" : "Send Self Message"}
         </button>
         {selfMessageOpen && <MessageForm type="self" />}
-        <h3
-          className="clickable"
-          onClick={() =>
-            this.setState({ viewSelfMessages: viewSelfMessages ? false : true })
-          }
-        >
-          {viewSelfMessages ? "Close Self Messages" : "View Self Messages"}
-        </h3>
+        <div className="row">
+          <div className="col">
+            <h3>Self Messages</h3>
+          </div>
+          <div className="col-2">
+            <button
+              className="btn btn-sm btn-dark"
+              onClick={() =>
+                this.setState({
+                  viewSelfMessages: viewSelfMessages ? false : true,
+                })
+              }
+            >
+              {viewSelfMessages ? "Close" : "Open"}
+            </button>
+          </div>
+        </div>
         {viewSelfMessages &&
-          selfMessages.map((m) => (
-            <FullMessage
-              message={m}
-              onMessageDelete={this.handleDeleteMessage}
-            />
+          (selfMessages.length > 0 ? (
+            selfMessages.map((m) => (
+              <FullMessage
+                message={m}
+                onMessageDelete={this.handleDeleteMessage}
+              />
+            ))
+          ) : (
+            <p>No self messages</p>
           ))}
-        <br />
-        <div style={{ borderBottom: "1px solid" }} className="separator" />
+
         <br />
         <button
           className="btn btn-primary"
@@ -137,9 +168,10 @@ class Messages extends Component {
               {f.username}
             </h5>
             {selectedFriend === f._id &&
-              (friendMessages[f._id] ? (
+              (friendMessages[f._id].length > 0 ? (
                 friendMessages[f._id].map((m) => (
                   <FullMessage
+                    _id={_id}
                     message={m}
                     onMessageDelete={this.handleDeleteMessage}
                   />

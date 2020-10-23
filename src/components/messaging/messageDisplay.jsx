@@ -1,11 +1,10 @@
 import React from "react";
 
-const MessageDisplay = ({ message }) => {
+const MessageDisplay = ({ message, from }) => {
   return (
     <div className="col">
       <div>
-        <h6>{message.title ? message.title : "<no subject>"}</h6>
-        <p>{message.text}</p>
+        <p className={from === "me" ? "text-right" : ""}>{message.text}</p>
       </div>
     </div>
   );

@@ -6,12 +6,11 @@ import { toast } from "react-toastify";
 
 class MessageForm extends Form {
   state = {
-    data: { title: "", text: "" },
+    data: { text: "" },
     errors: {},
   };
 
   schema = {
-    title: Joi.string().optional().allow("").label("Title"),
     text: Joi.string().required().label("Message Text"),
   };
 
@@ -41,7 +40,6 @@ class MessageForm extends Form {
           {this.props.type === "friend" &&
             !this.props.sendTo &&
             this.renderSelect("to", "Send to", this.props.friends)}
-          {this.renderInput("title", "Title", "autofocus")}
           {this.renderAreaInput("text", "Message", 3)}
           {this.renderValidatedButton("Send")}
         </form>
