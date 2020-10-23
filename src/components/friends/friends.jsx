@@ -1,7 +1,11 @@
 import React, { Component } from "react";
+import { toast } from "react-toastify";
 import { getMessages } from "../../services/messageService";
+import { confirmFriend, deleteFriend } from "../../services/friendService";
 import PageHeader from "../common/pageHeader";
 import FriendForm from "./friendForm";
+import MessageForm from "./../messaging/messageForm";
+import Loading from "../common/loading";
 
 class Friends extends Component {
   state = {
@@ -10,9 +14,12 @@ class Friends extends Component {
     requestedFriends: [],
     friendRequests: [],
     addFriendOpen: false,
+    messageFormOpen: null,
+    loading: false,
   };
 
   async componentDidMount() {
+    this.setState({ loading: true });
     const response = await getMessages();
     if (response.status === 200) {
       let friends = [];
@@ -30,14 +37,19 @@ class Friends extends Component {
         friendRequests,
       });
     }
+    this.setState({ loading: false });
   }
 
   handleAcceptFriend = async (friend) => {
-    console.log(friend);
+    const response = await confirmFriend(friend);
+    if (response.status === 200) window.location = "/friends";
+    else toast.error(response.data);
   };
 
-  handleRejectFriend = async (friend) => {
-    console.log(friend);
+  handleDeleteFriend = async (friend) => {
+    const response = await deleteFriend(friend);
+    if (response.status === 200) window.location = "/friends";
+    else toast.error(response.data);
   };
 
   render() {
@@ -47,8 +59,12 @@ class Friends extends Component {
       requestedFriends,
       friendRequests,
       addFriendOpen,
+      messageFormOpen,
+      loading,
     } = this.state;
-    return (
+    return loading ? (
+      <Loading />
+    ) : (
       <React.Fragment>
         <PageHeader username={username} />
         <button
@@ -66,14 +82,41 @@ class Friends extends Component {
             <h5>Friends</h5>
             <br />
             {friends.map((f) => (
-              <React.Fragment>
-                <div className="row" key={f.username}>
-                  <div className="col">{f.username}</div>
+              <React.Fragment key={f.username}>
+                <div className="row">
                   <div className="col">
-                    <button className="btn btn-sm btn-primary">Send</button>
+                    {messageFormOpen === f._id ? (
+                      <b>{f.username}</b>
+                    ) : (
+                      f.username
+                    )}
+                  </div>
+                  <div className="col">
+                    <button
+                      className="btn btn-sm btn-primary"
+                      onClick={() =>
+                        this.setState({
+                          messageFormOpen:
+                            messageFormOpen === f._id ? null : f._id,
+                        })
+                      }
+                    >
+                      {messageFormOpen === f._id ? "Close" : "Send"}
+                    </button>
                     <br />
                     <button className="btn btn-sm btn-light">View</button>
                   </div>
+                  <div className="col">
+                    <button
+                      className="btn btn-sm btn-danger"
+                      onClick={() => this.handleDeleteFriend(f)}
+                    >
+                      Remove Friend
+                    </button>
+                  </div>
+                  {messageFormOpen === f._id && (
+                    <MessageForm type="friend" sendTo={f} />
+                  )}
                 </div>
                 <hr />
               </React.Fragment>
@@ -82,28 +125,45 @@ class Friends extends Component {
           <div className="col">
             <React.Fragment>
               <h5>Pending Requests</h5>
-              {requestedFriends.map((f) => (
-                <div key={f.username}>{f.username}</div>
-              ))}
+              <br />
               {friendRequests.map((f) => (
-                <div className="row" key={f.username}>
-                  <div className="col">{f.username}</div>
-                  <div className="col">
-                    <button
-                      className="btn btn-sm btn-success"
-                      onClick={() => this.handleAcceptFriend(f)}
-                    >
-                      Accept
-                    </button>
-                    <br />
-                    <button
-                      className="btn btn-sm btn-danger"
-                      onClick={() => this.handleRejectFriend(f)}
-                    >
-                      Reject
-                    </button>
+                <React.Fragment key={f.username}>
+                  <div className="row">
+                    <div className="col">{f.username}</div>
+                    <div className="col">
+                      <button
+                        className="btn btn-sm btn-success"
+                        onClick={() => this.handleAcceptFriend(f)}
+                      >
+                        Accept
+                      </button>
+                      <br />
+                      <button
+                        className="btn btn-sm btn-danger"
+                        onClick={() => this.handleDeleteFriend(f)}
+                      >
+                        Reject
+                      </button>
+                    </div>
                   </div>
-                </div>
+                  <hr />
+                </React.Fragment>
+              ))}
+              {requestedFriends.map((f) => (
+                <React.Fragment key={f.username}>
+                  <div className="row">
+                    <div className="col">{f.username}</div>
+                    <div className="col">
+                      <button
+                        className="btn btn-sm btn-danger"
+                        onClick={() => this.handleDeleteFriend(f)}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                  <hr />
+                </React.Fragment>
               ))}
             </React.Fragment>
           </div>

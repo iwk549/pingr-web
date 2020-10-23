@@ -16,6 +16,7 @@ class Form extends Component {
     if (!error) return this.state.disabled || null;
     const errors = {};
     for (let detail of error.details) errors[detail.path[0]] = detail.message;
+    console.log(errors);
     return errors;
   };
 

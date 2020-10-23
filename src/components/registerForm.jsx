@@ -8,19 +8,19 @@ import Cookies from "js-cookie";
 
 class RegisterForm extends Form {
   state = {
-    data: { username: "", email: "", password: "" },
+    data: { username: "", password: "" },
     errors: {},
     apiError: "",
   };
 
   schema = {
     username: Joi.string().required().label("Username"),
-    email: Joi.string().required().email().label("Email"),
     password: Joi.string().required().min(8).label("Password"),
   };
 
   doSubmit = async () => {
     const data = { ...this.state.data };
+    data.username = data.username.toLowerCase();
     const response = await registerNewUser(data);
     if (response.status === 200) {
       window.location = "/messages";
@@ -33,8 +33,7 @@ class RegisterForm extends Form {
       <div>
         <h1>Register</h1>
         <form onSubmit={this.handleSubmit}>
-          {this.renderInput("email", "Email", "autofocus")}
-          {this.renderInput("username", "Username")}
+          {this.renderInput("username", "Username", "autofocus")}
           {this.renderInput("password", "Password", "", "password")}
           {this.renderValidatedButton("Register")}
         </form>

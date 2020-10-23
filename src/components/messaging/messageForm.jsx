@@ -18,13 +18,15 @@ class MessageForm extends Form {
   constructor(props) {
     super(props);
     if (props.type === "friend") {
-      this.schema.to = Joi.string().required().label("Send to");
-      this.setState({ to: "" });
+      if (!props.sendTo)
+        this.schema.to = Joi.string().required().label("Send to");
+      this.setState({ to: props.sendTo ? props.sendTo._id : "" });
     }
   }
 
   doSubmit = async () => {
     const data = { ...this.state.data };
+    if (this.state.sendTo) data.to = this.state.sendTo._id;
     if (data.to === "Make a selection...")
       return toast("Please select a recipient.");
     const response = await sendMessage(data);
@@ -37,9 +39,10 @@ class MessageForm extends Form {
       <div>
         <form onSubmit={this.handleSubmit}>
           {this.props.type === "friend" &&
+            !this.props.sendTo &&
             this.renderSelect("to", "Send to", this.props.friends)}
           {this.renderInput("title", "Title", "autofocus")}
-          {this.renderAreaInput("text", "Message")}
+          {this.renderAreaInput("text", "Message", 3)}
           {this.renderValidatedButton("Send")}
         </form>
       </div>

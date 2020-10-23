@@ -8,19 +8,18 @@ import { Redirect } from "react-router-dom";
 
 class LoginForm extends Form {
   state = {
-    data: { email: "", password: "" },
-    token: null,
+    data: { username: "", password: "" },
     errors: {},
   };
 
   schema = {
-    email: Joi.string().required().email().label("Email"),
+    username: Joi.string().required().min(3).max(30).label("Username"),
     password: Joi.string().required().label("Password"),
   };
 
   doSubmit = async () => {
     const data = { ...this.state.data };
-    data.email = data.email.toLowerCase();
+    data.username = data.username.toLowerCase();
 
     const response = await loginUser(data);
     if (response.status === 200) {
@@ -34,7 +33,7 @@ class LoginForm extends Form {
       <div>
         <h1>{"Login"}</h1>
         <form onSubmit={this.handleSubmit}>
-          {this.renderInput("email", "Email", "autofocus")}
+          {this.renderInput("username", "Username", "autofocus")}
           {this.renderInput("password", "Password", "", "password")}
 
           {this.renderValidatedButton("Login")}

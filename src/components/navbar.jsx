@@ -10,7 +10,7 @@ const NavBar = ({ user }) => {
     window.location = "/login";
   };
   return (
-    <nav className="navbar nav-tabs">
+    <nav className="navbar nav-tabs sticky-top">
       {!user && (
         <React.Fragment>
           <NavLink className="nav-item nav-link" to="/login">

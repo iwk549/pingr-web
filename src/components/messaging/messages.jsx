@@ -1,18 +1,27 @@
-import React, { Component, useEffect, useState } from "react";
+import React, { Component } from "react";
 import { toast } from "react-toastify";
+import _ from "lodash";
 import { getMessages, deleteMessage } from "../../services/messageService";
 import MessageForm from "./messageForm";
 import Loading from "../common/loading";
 import PageHeader from "../common/pageHeader";
+import MessageDeleteButton from "./../common/messageDeleteButton";
+import MessageDisplay from "./../common/messageDisplay";
+import FullMessage from "./../common/fullMessage";
 
 class Messages extends Component {
   state = {
     username: "",
     selfMessages: [],
-    friendMessages: [],
+    friendMessages: {},
     friends: [],
     selfMessageOpen: false,
+    viewSelfMessages: false,
     friendMessageOpen: false,
+    selectedFriend: null,
+    friendOrder: "asc",
+    friendSort: "username",
+    friendSearch: "",
     loading: true,
   };
 
@@ -25,6 +34,7 @@ class Messages extends Component {
         if (m.from === response.data._id) selfMessages.push(m);
         else friendMessages.push(m);
       });
+      friendMessages = _.groupBy(friendMessages, "from");
       let friends = [];
       response.data.friends.forEach((f) => {
         if (f.confirmed) friends.push(f);
@@ -58,16 +68,24 @@ class Messages extends Component {
     else toast.error(response.data);
   };
 
+  getPageData = () => {
+    let { friends, friendOrder, friendSort } = this.state;
+    friends = _.orderBy(friends, friendSort, friendOrder);
+    return friends;
+  };
+
   render() {
     const {
-      friends,
       selfMessages,
       friendMessages,
       selfMessageOpen,
+      viewSelfMessages,
       friendMessageOpen,
       username,
+      selectedFriend,
       loading,
     } = this.state;
+    const friends = this.getPageData();
     return loading ? (
       <Loading />
     ) : (
@@ -80,29 +98,24 @@ class Messages extends Component {
           {selfMessageOpen ? "Close Self Message" : "Send Self Message"}
         </button>
         {selfMessageOpen && <MessageForm type="self" />}
-        <h3>Self Messages</h3>
-        {selfMessages.map((m) => (
-          <React.Fragment>
-            <div className="row">
-              <div className="col">
-                <div key={m._id + String(m.time)}>
-                  <h6>{m.title ? m.title : "<no subject>"}</h6>
-                  <p>{m.text}</p>
-                </div>
-              </div>
-              <div className="col-2">
-                <button
-                  className="btn btn-sm btn-danger"
-                  onClick={() => this.handleDeleteMessage(m)}
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-            <hr />
-          </React.Fragment>
-        ))}
-        <hr />
+        <h3
+          className="clickable"
+          onClick={() =>
+            this.setState({ viewSelfMessages: viewSelfMessages ? false : true })
+          }
+        >
+          {viewSelfMessages ? "Close Self Messages" : "View Self Messages"}
+        </h3>
+        {viewSelfMessages &&
+          selfMessages.map((m) => (
+            <FullMessage
+              message={m}
+              onMessageDelete={this.handleDeleteMessage}
+            />
+          ))}
+        <br />
+        <div style={{ borderBottom: "1px solid" }} className="separator" />
+        <br />
         <button
           className="btn btn-primary"
           onClick={() => this.openMessageForm("friend")}
@@ -111,12 +124,31 @@ class Messages extends Component {
         </button>
         {friendMessageOpen && <MessageForm type="friend" friends={friends} />}
         <h3>Friend Messages</h3>
-        {friendMessages.map((m) => (
-          <div key={m._id + String(m.time)}>
-            <h6>{m.title + " - " + m.fromName}</h6>
-            <p>{m.text}</p>
+        {friends.map((f) => (
+          <React.Fragment key={f._id}>
+            <h5
+              className="clickable"
+              onClick={() =>
+                this.setState({
+                  selectedFriend: selectedFriend === f._id ? null : f._id,
+                })
+              }
+            >
+              {f.username}
+            </h5>
+            {selectedFriend === f._id &&
+              (friendMessages[f._id] ? (
+                friendMessages[f._id].map((m) => (
+                  <FullMessage
+                    message={m}
+                    onMessageDelete={this.handleDeleteMessage}
+                  />
+                ))
+              ) : (
+                <div>No Messages</div>
+              ))}
             <hr />
-          </div>
+          </React.Fragment>
         ))}
       </React.Fragment>
     );
