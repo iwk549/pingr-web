@@ -119,6 +119,7 @@ class Form extends Component {
         onChange={this.handleChange}
         error={errors[name]}
         disabled={disabled}
+        autoFocus={autofocus}
       />
     );
   }

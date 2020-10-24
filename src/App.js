@@ -42,8 +42,18 @@ class App extends Component {
             <Switch>
               <Route exact path="/register" component={RegisterForm} />
               <Route exact path="/login" component={LoginForm} />
-              <ProtectedRoute exact path="/messages" component={Messages} />
-              <ProtectedRoute exact path="/friends" component={Friends} />
+              <ProtectedRoute
+                exact
+                path="/messages"
+                component={Messages}
+                userInfo={this.state.userInfo}
+              />
+              <ProtectedRoute
+                exact
+                path="/friends"
+                component={Friends}
+                userInfo={this.state.userInfo}
+              />
               <Route exact path="/about" component={About} />
               <Redirect to="/messages" />
             </Switch>

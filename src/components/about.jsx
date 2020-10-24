@@ -10,7 +10,7 @@ class About extends Component {
         <p>
           Pingr.club is a completely cross platform lightweight messaging app.
           Send messages to yourself and pick them up on any device anywhere. Add
-          you friends by their username and you can send messages to them too.
+          your friends by their username and you can send messages to them too.
         </p>
         <p>
           You can pick up your messages on any internet capable device. Use our

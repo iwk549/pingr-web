@@ -3,6 +3,7 @@ import Form from "../common/form";
 import Joi from "joi-browser";
 import { sendMessage } from "../../services/messageService";
 import { toast } from "react-toastify";
+import { MdSend } from "react-icons/md";
 
 class MessageForm extends Form {
   state = {
@@ -26,6 +27,7 @@ class MessageForm extends Form {
   doSubmit = async () => {
     const data = { ...this.state.data };
     if (this.state.sendTo) data.to = this.state.sendTo._id;
+    else if (this.props.sendTo) data.to = this.props.sendTo._id;
     if (data.to === "Make a selection...")
       return toast("Please select a recipient.");
     const response = await sendMessage(data);
@@ -40,8 +42,17 @@ class MessageForm extends Form {
           {this.props.type === "friend" &&
             !this.props.sendTo &&
             this.renderSelect("to", "Send to", this.props.friends)}
-          {this.renderAreaInput("text", "Message", 3)}
-          {this.renderValidatedButton("Send")}
+          {this.renderAreaInput(
+            "text",
+            this.props.sendTo
+              ? "Message " + this.props.sendTo.username
+              : this.props.type === "self"
+              ? "Message Myself"
+              : "Message",
+            this.props.rows || 3,
+            "autofocus"
+          )}
+          {this.renderValidatedButton(<MdSend />)}
         </form>
       </div>
     );

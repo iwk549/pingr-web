@@ -24,6 +24,9 @@ code {
 .separator {
   border-color: #ffffcc;
 }
+.main-separator {
+  border-bottom: 2px solid #ffffcc;
+}
 
 .navbar {
   background-color: #001a00;
@@ -61,4 +64,13 @@ code {
 }
 .btn-primary:active {
   background-color: red;
+}
+
+.icon-white {
+  color: white;
+  vertical-align: middle;
+}
+.icon-dark {
+  color: black;
+  vertical-align: middle;
 }

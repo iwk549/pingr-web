@@ -4,8 +4,11 @@ import { getMessages } from "../../services/messageService";
 import { confirmFriend, deleteFriend } from "../../services/friendService";
 import PageHeader from "../common/pageHeader";
 import FriendForm from "./friendForm";
-import MessageForm from "./../messaging/messageForm";
 import Loading from "../common/loading";
+import FriendRequest from "./friendRequest";
+import { BsPersonPlusFill } from "react-icons/bs";
+import { MdClose } from "react-icons/md";
+import { IconContext } from "react-icons";
 
 class Friends extends Component {
   state = {
@@ -40,6 +43,18 @@ class Friends extends Component {
     this.setState({ loading: false });
   }
 
+  handleMessageFormOpen = (friend) => {
+    this.setState({
+      messageFormOpen:
+        this.state.messageFormOpen === friend._id ? null : friend._id,
+    });
+  };
+
+  handleViewMessages = (friend) => {
+    console.log(friend);
+    this.props.location.pathname = "/messages";
+  };
+
   handleAcceptFriend = async (friend) => {
     const response = await confirmFriend(friend);
     if (response.status === 200) window.location = "/friends";
@@ -47,9 +62,14 @@ class Friends extends Component {
   };
 
   handleDeleteFriend = async (friend) => {
-    const response = await deleteFriend(friend);
-    if (response.status === 200) window.location = "/friends";
-    else toast.error(response.data);
+    const ok = window.confirm(
+      `Are you sure you want to remove ${friend.username}?`
+    );
+    if (ok) {
+      const response = await deleteFriend(friend);
+      if (response.status === 200) window.location = "/friends";
+      else toast.error(response.data);
+    }
   };
 
   render() {
@@ -65,110 +85,58 @@ class Friends extends Component {
     return loading ? (
       <Loading />
     ) : (
-      <React.Fragment>
-        <PageHeader username={username} />
-        <button
-          className="btn btn-block btn-primary"
-          onClick={() =>
-            this.setState({ addFriendOpen: addFriendOpen ? false : true })
-          }
-        >
-          {addFriendOpen ? "Close Friend Add Form" : "Add Friend"}
-        </button>
-        {addFriendOpen && <FriendForm />}
-        <br />
-        <div className="row">
-          <div className="col">
-            <h5>Friends</h5>
-            <br />
-            {friends.map((f) => (
-              <React.Fragment key={f.username}>
-                <div className="row">
-                  <div className="col">
-                    {messageFormOpen === f._id ? (
-                      <b>{f.username}</b>
-                    ) : (
-                      f.username
-                    )}
-                  </div>
-                  <div className="col">
-                    <button
-                      className="btn btn-sm btn-primary"
-                      onClick={() =>
-                        this.setState({
-                          messageFormOpen:
-                            messageFormOpen === f._id ? null : f._id,
-                        })
-                      }
-                    >
-                      {messageFormOpen === f._id ? "Close" : "Send"}
-                    </button>
-                    <br />
-                    <button className="btn btn-sm btn-light">View</button>
-                  </div>
-                  <div className="col">
-                    <button
-                      className="btn btn-sm btn-danger"
-                      onClick={() => this.handleDeleteFriend(f)}
-                    >
-                      Remove Friend
-                    </button>
-                  </div>
-                  {messageFormOpen === f._id && (
-                    <MessageForm type="friend" sendTo={f} />
-                  )}
-                </div>
-                <hr />
-              </React.Fragment>
-            ))}
-          </div>
-          <div className="col">
-            <React.Fragment>
-              <h5>Pending Requests</h5>
+      <IconContext.Provider value={{ className: "icon-white" }}>
+        <React.Fragment>
+          <PageHeader username={username} />
+          <button
+            className="btn btn-block btn-primary"
+            onClick={() =>
+              this.setState({ addFriendOpen: addFriendOpen ? false : true })
+            }
+          >
+            {addFriendOpen ? <MdClose /> : <BsPersonPlusFill />}
+          </button>
+          {addFriendOpen && <FriendForm />}
+          <br />
+          <div className="row">
+            <div className="col">
+              <h5>Friends</h5>
               <br />
-              {friendRequests.map((f) => (
-                <React.Fragment key={f.username}>
-                  <div className="row">
-                    <div className="col">{f.username}</div>
-                    <div className="col">
-                      <button
-                        className="btn btn-sm btn-success"
-                        onClick={() => this.handleAcceptFriend(f)}
-                      >
-                        Accept
-                      </button>
-                      <br />
-                      <button
-                        className="btn btn-sm btn-danger"
-                        onClick={() => this.handleDeleteFriend(f)}
-                      >
-                        Reject
-                      </button>
-                    </div>
-                  </div>
-                  <hr />
-                </React.Fragment>
+              {friends.map((f) => (
+                <FriendRequest
+                  type="friend"
+                  friend={f}
+                  onDeleteFriend={this.handleDeleteFriend}
+                  messageFormOpen={messageFormOpen}
+                  onMessageFormOpen={this.handleMessageFormOpen}
+                  onViewMessages={this.handleViewMessages}
+                />
               ))}
-              {requestedFriends.map((f) => (
-                <React.Fragment key={f.username}>
-                  <div className="row">
-                    <div className="col">{f.username}</div>
-                    <div className="col">
-                      <button
-                        className="btn btn-sm btn-danger"
-                        onClick={() => this.handleDeleteFriend(f)}
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                  <hr />
-                </React.Fragment>
-              ))}
-            </React.Fragment>
+            </div>
+            <div className="col">
+              <React.Fragment>
+                <h5>Pending Requests</h5>
+                <br />
+                {friendRequests.map((f) => (
+                  <FriendRequest
+                    type="pending"
+                    friend={f}
+                    onAcceptFriend={this.handleAcceptFriend}
+                    onDeleteFriend={this.handleDeleteFriend}
+                  />
+                ))}
+                {requestedFriends.map((f) => (
+                  <FriendRequest
+                    type="requested"
+                    friend={f}
+                    onDeleteFriend={this.handleDeleteFriend}
+                  />
+                ))}
+              </React.Fragment>
+            </div>
           </div>
-        </div>
-      </React.Fragment>
+        </React.Fragment>
+      </IconContext.Provider>
     );
   }
 }
